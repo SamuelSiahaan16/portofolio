@@ -42,3 +42,19 @@ export const SITE_META = {
   description: "Deskripsi singkat portfolio. Ganti dengan copy kamu.",
   locale: "id",
 } as const;
+
+/** Footer — teks penutup & latar falling pattern (ink reveal). */
+export const FOOTER = {
+  thankYouText: "THANK YOU",
+  pattern: {
+    variant: "dots" as const,
+    color: "#2ee88a",
+    duration: 48,
+    density: 3.5,
+    blurIntensity: "0.32rem",
+    scale: 1.85,
+  },
+  /** RGB mask gelap — selaras dengan --color-bg dark */
+  darkMaskColor: [22, 22, 28] as [number, number, number],
+  lightMaskColor: [248, 248, 252] as [number, number, number],
+} as const;

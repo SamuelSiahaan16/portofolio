@@ -27,8 +27,10 @@ Portfolio pribadi single-page dengan nuansa macOS — hero interaktif, dock navi
 | **Dock Nav** | Navbar gaya macOS dock — ikon dari [theSVG](https://thesvg.org), magnification on hover, tooltip label |
 | **Smart placement** | Dock di tengah saat di hero, naik ke atas saat scroll ke section lain |
 | **Active section** | `IntersectionObserver` menyorot section aktif; tombol dock ke section aktif disembunyikan |
+| **Footer** | Full viewport (`100dvh`) — latar `FallingPattern` bintik hijau, teks **THANK YOU** + copyright, layer `InkReveal` (coret untuk membuka teks) |
+| **Dock hide di footer** | Saat footer terlihat ≥35%, dock disembunyikan lewat `useFooterInView` |
 | **Single-page scroll** | Satu route `/`, navigasi smooth scroll tanpa hash URL |
-| **Copy terpusat** | Semua label, deskripsi, dan meta situs di `src/config/copy.ts` |
+| **Copy terpusat** | Semua label, deskripsi, meta situs, dan config footer di `src/config/copy.ts` |
 | **A11y & motion** | `prefers-reduced-motion`, `aria-label`, scrollbar native disembunyikan |
 
 ---
@@ -99,6 +101,8 @@ flowchart TB
 2. `HomePage` merender section via `renderSection()` — hero full-width, sisanya di dalam `Container`.
 3. `DockPlacementContext` memantau posisi hero dan mengatur dock `center` ↔ `top`.
 4. `useActiveSection` mendeteksi section yang terlihat; `dock-tabs` menyembunyikan item aktif.
+5. `SiteFooter` menumpuk tiga layer: `FallingPattern` (latar animasi) → teks penutup → `InkReveal` (canvas scratch di atas).
+6. `useFooterInView` memantau `#footer`; saat masuk viewport, dock di-`AnimatePresence` keluar.
 
 ---
 
@@ -160,6 +164,7 @@ my-portofolio/
     │
     ├── hooks/
     │   ├── useActiveSection.ts        # IntersectionObserver section aktif
+    │   ├── useFooterInView.ts         # Sembunyikan dock saat footer terlihat
     │   └── useColorScheme.ts          # prefers-color-scheme untuk Three.js
     │
     ├── layouts/
@@ -189,7 +194,8 @@ my-portofolio/
     │   └── ui/
     │       ├── dock-tabs.tsx          # Dock macOS + AnimatePresence
     │       ├── reveal-text.tsx        # Animasi huruf per karakter
-    │       ├── falling-pattern.tsx    # Pattern hover (background-clip)
+    │       ├── falling-pattern.tsx    # Partikel jatuh — `streaks` (hero) / `dots` (footer)
+    │       ├── ink-reveal.tsx         # Canvas scratch-to-reveal di footer
     │       ├── dotted-surface.tsx     # Hero Three.js
     │       ├── SectionShell.tsx       # Wrapper section placeholder
     │       └── Container.tsx
@@ -208,7 +214,11 @@ my-portofolio/
 
 | File | Peran |
 |------|-------|
-| `src/config/copy.ts` | **Satu sumber teks** — `BRAND.heroText`, `SECTION_COPY`, `SITE_META` |
+| `src/config/copy.ts` | **Satu sumber teks** — `BRAND`, `SECTION_COPY`, `SITE_META`, `FOOTER` |
+| `src/layouts/SiteFooter.tsx` | Komposisi footer: pattern, teks hover, ink layer |
+| `src/components/ui/falling-pattern.tsx` | Animasi partikel CSS (`variant: "dots"` \| `"streaks"`) |
+| `src/components/ui/ink-reveal.tsx` | Efek coret tinta di atas footer |
+| `src/hooks/useFooterInView.ts` | Trigger sembunyikan dock saat scroll ke footer |
 | `src/config/site.ts` | Urutan section & struktur navigasi |
 | `src/config/dock-nav.ts` | Icon dock per section (slug theSVG) |
 | `src/components/ui/dock-tabs.tsx` | UI dock, hide active item, tooltip |
@@ -243,6 +253,35 @@ export const SITE_META = {
   locale: "id",
 };
 ```
+
+### Footer — teks, pattern, dan ink reveal
+
+Edit **`FOOTER`** di `src/config/copy.ts`:
+
+```ts
+export const FOOTER = {
+  thankYouText: "THANK YOU",
+  pattern: {
+    variant: "dots",       // "dots" = bintik bulat jatuh | "streaks" = garis vertikal (dipakai hero hover)
+    color: "#2ee88a",      // warna partikel
+    duration: 48,          // detik satu siklus animasi
+    density: 3.5,          // kerapatan overlay (mode streaks)
+    blurIntensity: "0.32rem",
+    scale: 1.85,           // zoom pattern di SiteFooter
+  },
+  darkMaskColor: [22, 22, 28],    // RGB mask ink — dark mode
+  lightMaskColor: [248, 248, 252], // RGB mask ink — light mode
+};
+```
+
+**Perilaku footer**
+
+- **Latar belakang** — `FallingPattern` dengan `variant="dots"`: bintik hijau jatuh ke bawah (bukan garis).
+- **Teks** — `thankYouText` + copyright muncul saat hover footer (atau langsung terlihat jika `prefers-reduced-motion`).
+- **Ink reveal** — layer canvas di atas; user menggeser kursor untuk “mengupas” tinta dan melihat teks di bawahnya. Brush size & lifetime diatur di `SiteFooter.tsx` (`brushSize`, `lifetime`).
+- **Dock** — otomatis hilang saat footer cukup terlihat di viewport.
+
+Hero hover brand tetap memakai `FallingPattern` mode **`streaks`** lewat `RevealText` (`background-clip: text`).
 
 ### Ganti icon dock
 
