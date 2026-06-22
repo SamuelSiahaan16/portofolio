@@ -33,7 +33,7 @@ function MainLayoutContent() {
         ) : null}
       </AnimatePresence>
       <SectionPager />
-      <main className="flex-1 pt-28">
+      <main className="flex-1">
         <Outlet />
       </main>
       <SiteFooter />

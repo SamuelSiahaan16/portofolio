@@ -1,5 +1,5 @@
 import { Container } from "@/components/ui/Container";
-import { siteConfig } from "@/config/site";
+import { fullWidthSectionIds, siteConfig } from "@/config/site";
 import { renderSection } from "@/features/portfolio/sections";
 
 export function HomePage() {
@@ -8,7 +8,7 @@ export function HomePage() {
       {siteConfig.sections.map((sectionId) => {
         const section = renderSection(sectionId);
 
-        if (sectionId === "hero") {
+        if (fullWidthSectionIds.includes(sectionId)) {
           return section;
         }
 

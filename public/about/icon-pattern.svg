@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#000" />
+  <text
+    x="368"
+    y="292"
+    fill="#fff"
+    font-family="Consolas, 'Cascadia Code', monospace"
+    font-size="88"
+    font-weight="700"
+    opacity="0.95"
+  >&lt;/&gt;</text>
+  <text
+    x="96"
+    y="156"
+    fill="#fff"
+    font-family="Consolas, 'Cascadia Code', monospace"
+    font-size="44"
+    font-weight="600"
+    opacity="0.28"
+  >&lt;/&gt;</text>
+  <text
+    x="420"
+    y="120"
+    fill="#fff"
+    font-family="Consolas, 'Cascadia Code', monospace"
+    font-size="32"
+    font-weight="600"
+    opacity="0.22"
+  >&lt;/&gt;</text>
+  <text
+    x="48"
+    y="400"
+    fill="#fff"
+    font-family="Consolas, 'Cascadia Code', monospace"
+    font-size="36"
+    font-weight="600"
+    opacity="0.18"
+  >&lt;/&gt;</text>
+  <text
+    x="248"
+    y="448"
+    fill="#fff"
+    font-family="Consolas, 'Cascadia Code', monospace"
+    font-size="28"
+    font-weight="600"
+    opacity="0.15"
+  >&lt;/&gt;</text>
+</svg>

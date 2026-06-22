@@ -13,6 +13,10 @@ export default defineConfig({
   optimizeDeps: {
     include: [
       "three",
+      "ogl",
+      "gsap",
+      "gsap/ScrollTrigger",
+      "gsap/SplitText",
       "@thesvg/react/gcp-home",
       "@thesvg/react/gravatar",
       "@thesvg/react/educative",

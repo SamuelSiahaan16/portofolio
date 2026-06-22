@@ -6,11 +6,12 @@ import {
 import type { SectionId } from "@/config/site";
 
 const SCROLL_LOCK_CLASS = "is-scroll-navigating";
-const SCROLL_TOLERANCE_PX = 4;
+export const SCROLL_TOLERANCE_PX = 4;
 
-function getScrollPaddingTop() {
-  const root = document.documentElement;
-  return Number.parseFloat(getComputedStyle(root).scrollPaddingTop) || 0;
+function getScrollElement(target: ScrollTarget) {
+  if (target === "hero") return document.getElementById("hero");
+  if (target === "footer") return document.getElementById("footer");
+  return document.getElementById(target);
 }
 
 function lockScrollNavigation() {
@@ -25,19 +26,28 @@ function unlockScrollNavigation() {
   root.style.scrollSnapType = "";
 }
 
-function getTargetScrollTop(target: ScrollTarget) {
+/** Align section top ke viewport top — satu layar penuh per section. */
+export function getTargetScrollTop(target: ScrollTarget) {
   if (target === "hero") return 0;
 
-  const el =
-    target === "footer"
-      ? document.getElementById("footer")
-      : document.getElementById(target);
-
+  const el = getScrollElement(target);
   if (!el) return window.scrollY;
 
-  return (
-    el.getBoundingClientRect().top + window.scrollY - getScrollPaddingTop()
-  );
+  return Math.max(0, el.getBoundingClientRect().top + window.scrollY);
+}
+
+/** Section yang paling relevan dengan posisi scroll saat ini. */
+export function getScrollTargetFromPosition(): ScrollTarget {
+  const probeY = window.scrollY + window.innerHeight * 0.45;
+  let matched: ScrollTarget = "hero";
+
+  for (const target of scrollTargets) {
+    if (probeY + SCROLL_TOLERANCE_PX >= getTargetScrollTop(target)) {
+      matched = target;
+    }
+  }
+
+  return matched;
 }
 
 function waitForScrollSettle(
@@ -78,16 +88,31 @@ function waitForScrollSettle(
   });
 }
 
-async function scrollToPosition(top: number, behavior: ScrollBehavior) {
-  const targetTop = Math.max(0, top);
+async function scrollToPosition(
+  targetTop: number,
+  behavior: ScrollBehavior,
+  target?: ScrollTarget,
+) {
+  const top = Math.max(0, targetTop);
+  const el = target ? getScrollElement(target) : null;
 
   lockScrollNavigation();
-  window.scrollTo({ top: targetTop, behavior });
-  await waitForScrollSettle(targetTop, behavior);
 
-  if (Math.abs(window.scrollY - targetTop) > SCROLL_TOLERANCE_PX) {
-    window.scrollTo({ top: targetTop, behavior: "auto" });
-    await waitForScrollSettle(targetTop, "auto");
+  if (el) {
+    el.scrollIntoView({ block: "start", behavior });
+  } else {
+    window.scrollTo({ top, behavior });
+  }
+
+  await waitForScrollSettle(top, behavior);
+
+  if (Math.abs(window.scrollY - top) > SCROLL_TOLERANCE_PX) {
+    if (el) {
+      el.scrollIntoView({ block: "start", behavior: "auto" });
+    } else {
+      window.scrollTo({ top, behavior: "auto" });
+    }
+    await waitForScrollSettle(top, "auto");
   }
 
   unlockScrollNavigation();
@@ -97,14 +122,14 @@ export function scrollToSection(
   id: SectionId,
   behavior: ScrollBehavior = "smooth",
 ) {
-  void scrollToPosition(getTargetScrollTop(id), behavior);
+  void scrollToPosition(getTargetScrollTop(id), behavior, id);
 }
 
 export function scrollToTarget(
   target: ScrollTarget,
   behavior: ScrollBehavior = "smooth",
 ) {
-  void scrollToPosition(getTargetScrollTop(target), behavior);
+  void scrollToPosition(getTargetScrollTop(target), behavior, target);
 }
 
 export function scrollToAdjacent(
@@ -117,7 +142,13 @@ export function scrollToAdjacent(
 
   const nextIndex = direction === "next" ? index + 1 : index - 1;
   const target = scrollTargets[nextIndex];
-  if (!target) return;
 
-  scrollToTarget(target, behavior);
+  if (target) {
+    scrollToTarget(target, behavior);
+    return;
+  }
+
+  if (direction === "prev" && window.scrollY > SCROLL_TOLERANCE_PX) {
+    scrollToTarget("hero", behavior);
+  }
 }

@@ -3,6 +3,7 @@
 @theme {
   --font-sans: "Segoe UI", system-ui, sans-serif;
   --font-mono: ui-monospace, "Cascadia Code", monospace;
+  --font-pixel: "Press Start 2P", var(--font-mono);
 
   --background: oklch(0.985 0.002 260);
   --primary: oklch(0.55 0.18 250);
@@ -41,7 +42,6 @@
 
   html {
     scroll-behavior: smooth;
-    scroll-padding-top: 7rem;
     scroll-snap-type: y proximity;
     scrollbar-width: none;
     -ms-overflow-style: none;

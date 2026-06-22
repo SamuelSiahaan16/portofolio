@@ -1,12 +1,17 @@
 import { useEffect, useRef } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { zIndex } from "@/config/z-index";
-import { resolveScrollTarget } from "@/config/scroll-targets";
-import { useActiveSection } from "@/hooks/useActiveSection";
+import { getScrollTargetIndex } from "@/config/scroll-targets";
 import { useFooterInView } from "@/hooks/useFooterInView";
 import { usePointerActivity } from "@/hooks/usePointerActivity";
+import { useScrollY } from "@/hooks/useScrollY";
 import { cn } from "@/lib/utils";
-import { scrollToAdjacent } from "@/utils/scroll-to-section";
+import {
+  SCROLL_TOLERANCE_PX,
+  getScrollTargetFromPosition,
+  scrollToAdjacent,
+  scrollToTarget,
+} from "@/utils/scroll-to-section";
 
 type PagerButtonProps = {
   label: string;
@@ -79,13 +84,13 @@ function PagerButton({
 export function SectionPager() {
   const reduceMotion = useReducedMotion();
   const pointerActive = usePointerActivity();
-  const activeSection = useActiveSection();
+  const scrollY = useScrollY();
   const footerInView = useFooterInView();
   const pagerRef = useRef<HTMLDivElement>(null);
-  const current = resolveScrollTarget(activeSection, footerInView);
+  const current = footerInView ? "footer" : getScrollTargetFromPosition();
   const scrollBehavior: ScrollBehavior = reduceMotion ? "auto" : "smooth";
 
-  const canGoUp = current !== "hero";
+  const canGoUp = scrollY > SCROLL_TOLERANCE_PX;
   const canGoDown = current !== "footer";
   const tabIndex = pointerActive ? 0 : -1;
 
@@ -103,7 +108,14 @@ export function SectionPager() {
 
   const goPrev = () => {
     if (!canGoUp) return;
-    scrollToAdjacent(current, "prev", scrollBehavior);
+
+    const index = getScrollTargetIndex(current);
+    if (index > 0) {
+      scrollToAdjacent(current, "prev", scrollBehavior);
+      return;
+    }
+
+    scrollToTarget("hero", scrollBehavior);
   };
 
   const goNext = () => {

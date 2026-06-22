@@ -13,6 +13,7 @@ Portfolio pribadi single-page dengan nuansa macOS — hero interaktif, dock navi
 - [Struktur Proyek](#struktur-proyek)
 - [File Penting](#file-penting)
 - [Kustomisasi Konten](#kustomisasi-konten)
+- [Section About](#section-about)
 - [Workflow Development](#workflow-development)
 - [Standar Kode](#standar-kode)
 - [Scripts](#scripts)
@@ -24,15 +25,18 @@ Portfolio pribadi single-page dengan nuansa macOS — hero interaktif, dock navi
 | Area | Deskripsi |
 |------|-----------|
 | **Hero** | Background `DottedSurface` (Three.js), brand `JEFF.DEV` dengan animasi `RevealText` + hover pattern |
+| **About** | Full-bleed section — latar `FaultyTerminal` (WebGL/ogl), `ProfileCard` tilt, stat counter, CTA 3D, kartu pendidikan, animasi enter/exit per blok |
+| **Section titles** | Judul section (About, Projects, …) memakai `Shuffle` (GSAP) — font pixel **Press Start 2P**, replay on hover |
 | **Dock Nav** | Navbar gaya macOS dock — ikon dari [theSVG](https://thesvg.org), magnification on hover, tooltip label |
 | **Smart placement** | Dock di tengah saat di hero, naik ke atas saat scroll ke section lain |
 | **Active section** | `IntersectionObserver` menyorot section aktif; tombol dock ke section aktif disembunyikan |
-| **Section Pager** | Panah atas/bawah kanan bawah — navigasi presentasi antar section + footer; auto-hide saat mouse idle |
-| **Scroll snap hybrid** | `scroll-snap` proximity untuk scroll bebas di section panjang; panah/dock lompat ketat per section |
+| **Section Pager** | Panah atas/bawah kanan bawah — navigasi presentasi antar section + footer; auto-hide saat mouse idle; perbaikan scroll balik hero↔about di mobile |
+| **Scroll snap hybrid** | `scroll-snap` proximity untuk scroll bebas di section panjang; panah/dock lompat ketat per section; deteksi posisi scroll untuk pager |
 | **Footer** | Full viewport (`100dvh`) — latar `FallingPattern` bintik hijau, teks **THANK YOU** + copyright, layer `InkReveal` (coret untuk membuka teks) |
 | **Dock hide di footer** | Saat footer terlihat ≥35%, dock disembunyikan lewat `useFooterInView` |
 | **Single-page scroll** | Satu route `/`, navigasi smooth scroll tanpa hash URL |
-| **Copy terpusat** | Semua label, deskripsi, meta situs, dan config footer di `src/config/copy.ts` |
+| **Copy terpusat** | Semua label, deskripsi, meta situs, config footer, about, dan animasi judul di `src/config/copy.ts` |
+| **Section shell** | Projects / Skills / Experience / Contact — `SectionShell` placeholder, konten di-center vertikal (`100dvh`) |
 | **A11y & motion** | `prefers-reduced-motion`, `aria-label`, scrollbar native disembunyikan |
 
 ---
@@ -45,8 +49,8 @@ Portfolio pribadi single-page dengan nuansa macOS — hero interaktif, dock navi
 | Build | Vite 7 |
 | Styling | Tailwind CSS v4 (`@tailwindcss/vite`) |
 | Routing | React Router DOM 7 |
-| Animasi | Motion 12 |
-| 3D | Three.js |
+| Animasi | Motion 12, GSAP 3 (`Shuffle` judul section) |
+| WebGL | Three.js (hero), **ogl** (FaultyTerminal background About) |
 | Ikon | [@thesvg/react](https://thesvg.org) |
 | UI pattern | shadcn-style (`components.json`, alias `@/`) |
 | Lint | ESLint 9 + typescript-eslint |
@@ -172,9 +176,10 @@ my-portofolio/
     │   └── DockPlacementContext.tsx   # State center/top dock + hysteresis scroll
     │
     ├── hooks/
-    │   ├── useActiveSection.ts        # IntersectionObserver section aktif
+    │   ├── useActiveSection.ts        # IntersectionObserver section aktif (dock)
     │   ├── useFooterInView.ts         # Sembunyikan dock saat footer terlihat
     │   ├── usePointerActivity.ts      # Deteksi gerakan mouse untuk show/hide pager
+    │   ├── useScrollY.ts              # Posisi scroll untuk logika pager
     │   └── useColorScheme.ts          # prefers-color-scheme untuk Three.js
     │
     ├── layouts/
@@ -189,7 +194,7 @@ my-portofolio/
     │   ├── index.tsx                  # sectionMap + renderSection()
     │   ├── HeroSection.tsx            # DottedSurface + HeroBrand
     │   ├── HeroBrand.tsx              # RevealText brand
-    │   ├── AboutSection.tsx
+    │   ├── AboutSection.tsx           # FaultyTerminal + ProfileCard + CTA + stats + education
     │   ├── ProjectsSection.tsx
     │   ├── SkillsSection.tsx
     │   ├── ExperienceSection.tsx
@@ -204,6 +209,15 @@ my-portofolio/
     │   └── ui/
     │       ├── dock-tabs.tsx          # Dock macOS + AnimatePresence
     │       ├── section-pager.tsx      # Panah prev/next kanan bawah
+    │       ├── section-heading.tsx    # Wrapper Shuffle untuk h2 section
+    │       ├── shuffle.tsx            # GSAP shuffle text (React Bits)
+    │       ├── section-reveal.tsx     # Fade/slide enter-exit per blok About
+    │       ├── faulty-terminal.tsx    # WebGL terminal background (ogl)
+    │       ├── profile-card.tsx       # Profile card tilt (React Bits)
+    │       ├── profile-card.css
+    │       ├── about-info-card.tsx    # Kartu stat & pendidikan About
+    │       ├── btn-3d.tsx             # Tombol 3D (destructive / primary)
+    │       ├── btn-3d.css
     │       ├── reveal-text.tsx        # Animasi huruf per karakter
     │       ├── falling-pattern.tsx    # Partikel jatuh — `streaks` (hero) / `dots` (footer)
     │       ├── ink-reveal.tsx         # Canvas scratch-to-reveal di footer
@@ -215,9 +229,18 @@ my-portofolio/
     │   └── index.css                  # Tailwind v4, CSS tokens, dark mode
     │
     └── utils/
-        ├── scroll-to-section.ts       # Scroll programmatic + scroll lock (anti snap glitch)
+        ├── scroll-to-section.ts       # Scroll programmatic + scroll lock + scrollIntoView
         └── cn.ts                      # className helper
 ```
+
+### Aset statis (`public/`)
+
+| Path | Peran |
+|------|-------|
+| `public/about/picture.png` | Foto profil ProfileCard (**wajib ditambahkan** — fallback ke `avatar.svg` jika tidak ada) |
+| `public/about/icon-pattern.svg` | Pola `</>` saat hover ProfileCard |
+| `public/about/avatar.svg` | Placeholder avatar bawaan |
+| `public/cv/cv.pdf` | File CV untuk tombol **Download CV** |
 
 ---
 
@@ -225,11 +248,20 @@ my-portofolio/
 
 | File | Peran |
 |------|-------|
-| `src/config/copy.ts` | **Satu sumber teks** — `BRAND`, `SECTION_COPY`, `SITE_META`, `FOOTER` |
+| `src/config/copy.ts` | **Satu sumber teks** — `BRAND`, `SECTION_COPY`, `SITE_META`, `FOOTER`, `ABOUT`, `SECTION_TITLE` |
 | `src/config/scroll-targets.ts` | Urutan target scroll pager (`sections` + `footer`) |
-| `src/utils/scroll-to-section.ts` | `scrollToSection`, `scrollToAdjacent` — lock snap saat navigasi |
-| `src/components/ui/section-pager.tsx` | Panah atas/bawah, idle hide, `inert` saat tersembunyi |
+| `src/utils/scroll-to-section.ts` | `scrollToSection`, `scrollToAdjacent`, `getScrollTargetFromPosition` — lock snap + `scrollIntoView` |
+| `src/components/ui/section-pager.tsx` | Panah atas/bawah, idle hide, `canGoUp` dari `scrollY`, `inert` saat tersembunyi |
+| `src/hooks/useScrollY.ts` | Track posisi scroll untuk pager |
 | `src/hooks/usePointerActivity.ts` | Show pager saat mouse/keyboard aktif (~2.2s idle) |
+| `src/features/portfolio/sections/AboutSection.tsx` | Layout About — grid 2 kolom, animasi per blok |
+| `src/components/ui/faulty-terminal.tsx` | Background WebGL merah glitch (ogl) |
+| `src/components/ui/profile-card.tsx` | Kartu profil interaktif + tilt + fallback avatar |
+| `src/components/ui/section-reveal.tsx` | Animasi fade/slide/blur enter & exit (Motion) |
+| `src/components/ui/about-info-card.tsx` | Kartu stat (counter) & pendidikan |
+| `src/components/ui/btn-3d.tsx` | Tombol 3D Download CV & View Projects |
+| `src/components/ui/shuffle.tsx` | Animasi judul section GSAP |
+| `src/components/ui/section-heading.tsx` | Wrapper `Shuffle` untuk h2 |
 | `src/layouts/SiteFooter.tsx` | Komposisi footer: pattern, teks hover, ink layer |
 | `src/components/ui/falling-pattern.tsx` | Animasi partikel CSS (`variant: "dots"` \| `"streaks"`) |
 | `src/components/ui/ink-reveal.tsx` | Efek coret tinta di atas footer |
@@ -327,6 +359,12 @@ hero → about → projects → skills → experience → contact → footer
 
 **Kustomisasi idle pager** — ubah timeout di `usePointerActivity(idleMs)` dari `section-pager.tsx`.
 
+**Perbaikan mobile (hero ↔ about)**
+
+- Tombol **naik** aktif selama `scrollY > 0` (tidak hanya saat keluar dari section hero).
+- Dari posisi antara dua section, pager memaksa scroll ke hero (`top: 0`) via `scrollIntoView`.
+- Deteksi section pager memakai `getScrollTargetFromPosition()` (posisi scroll), bukan hanya IntersectionObserver.
+
 ### Ganti icon dock
 
 Edit mapping di **`src/config/dock-nav.ts`**, lalu daftarkan import di **`src/components/icons/registry.ts`**. Cari slug di [thesvg.org](https://thesvg.org).
@@ -338,6 +376,132 @@ Edit mapping di **`src/config/dock-nav.ts`**, lalu daftarkan import di **`src/co
 3. Buat komponen section di `features/portfolio/sections/`
 4. Daftarkan di `sectionMap` (`sections/index.tsx`)
 5. Tambah icon di `dock-nav.ts` + `registry.ts`
+
+---
+
+## Section About
+
+Section **About** adalah implementasi penuh pertama (bukan placeholder `SectionShell`). Section lain (Projects, Skills, …) masih memakai `SectionShell` dengan konten placeholder.
+
+### Ringkasan perubahan About
+
+| Area | Yang ditambahkan / diubah |
+|------|---------------------------|
+| **Layout** | Full-bleed (`fullWidthSectionIds`), konten di-center vertikal (`min-h-[100dvh]` + flex), grid 2 kolom desktop |
+| **Background** | `FaultyTerminal` — pola digit merah WebGL (`ogl`), overlay gelap, mouse-reactive |
+| **Profile card** | `ProfileCard` (React Bits) — foto full-bleed, tilt 3D, handle `@jefff.sh`, tombol Contact → scroll ke `#contact` |
+| **Stat cards** | 3 kartu di bawah profile — counter animasi (Motion) saat masuk viewport |
+| **CTA** | Tombol **Download CV** (`btn-3d-destructive`) & **View Projects** (`btn-3d-primary`) |
+| **Education** | 2 kartu kaca — IT Del (D3 TI, lulus) & Binus (S1, berjalan) + GPA |
+| **Judul** | `SectionHeading` → `Shuffle` GSAP, font pixel |
+| **Animasi** | `SectionReveal` per blok — fade + slide + blur saat masuk/keluar section; backdrop terminal fade/scale |
+| **Responsif** | Profile card di-center horizontal; ukuran card dari lebar (bukan `height: 80svh` yang bikin offset) |
+
+### Layout About (desktop)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  [FaultyTerminal background — full bleed]               │
+│  ┌──────────────────┬──────────────────────────────────┐│
+│  │  ProfileCard     │  ABOUT ME (Shuffle)              ││
+│  │                  │  Deskripsi                       ││
+│  │  [10+][3+][15+]  │  [Download CV] [View Projects]   ││
+│  │   stats          │  [IT Del card] [Binus card]      ││
+│  └──────────────────┴──────────────────────────────────┘│
+└─────────────────────────────────────────────────────────┘
+```
+
+### Config About — `ABOUT` di `copy.ts`
+
+```ts
+export const ABOUT = {
+  overlayOpacity: 0.52,
+  terminal: {
+    scale: 2.8,
+    tint: "#fc0006",
+    mouseReact: true,
+    // ... FaultyTerminal props
+  },
+  profile: {
+    name: "",
+    title: "",
+    handle: "jefff.sh",
+    avatarUrl: "/about/picture.png",
+    iconUrl: "/about/icon-pattern.svg",
+    contactText: "Contact Me",
+    enableTilt: true,
+    // ...
+  },
+  actions: {
+    cvUrl: "/cv/cv.pdf",
+    cvLabel: "Download CV",
+    projectsLabel: "View Projects",
+  },
+  education: [
+    {
+      badge: "Lulus",
+      degree: "D3 Teknologi Informasi",
+      institution: "Institut Teknologi Del",
+      gpa: "4.00/4.00",
+    },
+    {
+      badge: "Berjalan",
+      degree: "S1",
+      institution: "Binus University",
+      gpa: "3.50/4.00",
+    },
+  ],
+  stats: [
+    { end: 10, suffix: "+", label: "Projects" },
+    { end: 3, suffix: "+", label: "Tahun" },
+    { end: 15, suffix: "+", label: "Tech Stack" },
+  ],
+};
+```
+
+**Label & deskripsi** section About tetap di `SECTION_COPY.about` (dipakai judul Shuffle + paragraf intro).
+
+### Animasi judul section — `SECTION_TITLE`
+
+```ts
+export const SECTION_TITLE = {
+  shuffleDirection: "down",
+  duration: 1.5,
+  shuffleTimes: 2,
+  ease: "power2.out",
+  triggerOnHover: true,
+  respectReducedMotion: true,
+  // ...
+};
+```
+
+Font pixel: **Press Start 2P** (Google Fonts di `index.html`, token `--font-pixel` di `index.css`).
+
+### Komponen About — file terkait
+
+| Komponen | File |
+|----------|------|
+| Section utama | `AboutSection.tsx` |
+| Background glitch | `faulty-terminal.tsx` + CSS |
+| Kartu profil | `profile-card.tsx` + `profile-card.css` |
+| Kartu stat & pendidikan | `about-info-card.tsx` (`AboutStatCard`, `AboutInfoCard`) |
+| Tombol 3D | `btn-3d.tsx` + `btn-3d.css` |
+| Animasi blok | `section-reveal.tsx` (`SectionReveal`, `SectionBackdropReveal`) |
+| Judul | `section-heading.tsx` → `shuffle.tsx` |
+
+### Perilaku animasi About
+
+- Semua blok About memakai **`sectionInView`** dari satu `useInView` di `<section>` — sinkron masuk/keluar.
+- **ProfileCard** tanpa `filter: blur` di wrapper (blur merusak render 3D tilt).
+- **Stat counter** — count-up dari `0` → `end` saat kartu terlihat; `prefers-reduced-motion` → angka langsung.
+- **Enter/exit** — animasi diulang setiap scroll masuk/keluar section (bukan `once`).
+
+### Checklist aset sebelum deploy
+
+1. Taruh foto di `public/about/picture.png`
+2. Taruh CV di `public/cv/cv.pdf`
+3. Isi `profile.name` & `profile.title` di `ABOUT.profile`
+4. Sesuaikan angka `stats`, `education`, dan `SECTION_COPY.about.description`
 
 ---
 
@@ -357,7 +521,7 @@ Edit mapping di **`src/config/dock-nav.ts`**, lalu daftarkan import di **`src/co
 - **Alias `@/`** — import dari `src/` (lihat `vite.config.ts` & `tsconfig`).
 - **Feature folders** — section portfolio di `features/portfolio/`.
 - **Single source of truth** — urutan section (`site.ts`), teks (`copy.ts`), icon (`dock-nav.ts` + `registry.ts`).
-- **Motion** — hormati `useReducedMotion()` untuk animasi non-esensial.
+- **Motion & GSAP** — hormati `useReducedMotion()` / `SECTION_TITLE.respectReducedMotion` untuk animasi non-esensial.
 - **Ikon** — hanya via `@thesvg/react` + `TheSvgIcon`; patch SVG rusak di `fixed-icons.tsx`.
 
 ---

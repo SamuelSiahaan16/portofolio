@@ -36,8 +36,10 @@ const sections: SectionId[] = [
   "contact",
 ];
 
+/** Section yang mengatur layout sendiri (full bleed, tanpa wrapper Container). */
+export const fullWidthSectionIds: SectionId[] = ["hero", "about"];
+
 /**
- * Single source of truth untuk struktur portfolio.
  * Edit urutan section di sini; label & deskripsi di `config/copy.ts`.
  */
 export const siteConfig: SiteConfig = {

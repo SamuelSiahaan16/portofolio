@@ -1,0 +1,56 @@
+.shuffle-parent {
+  display: inline-block;
+  white-space: normal;
+  word-wrap: break-word;
+  will-change: transform;
+  line-height: 1;
+  font-size: 4rem;
+  font-family: var(--font-pixel);
+  text-transform: uppercase;
+  visibility: hidden;
+}
+
+.shuffle-parent.is-ready {
+  visibility: visible;
+}
+
+.section-shuffle-title.shuffle-parent {
+  display: block;
+  width: 100%;
+  font-family: var(--font-pixel);
+  font-size: clamp(1.65rem, 5.8vw, 3.35rem);
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+}
+
+.section-shuffle-title .shuffle-char {
+  line-height: 1.45;
+}
+
+.shuffle-char-wrapper {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: baseline;
+  position: relative;
+}
+
+.shuffle-char-wrapper > span {
+  display: inline-flex;
+  will-change: transform;
+}
+
+.shuffle-char {
+  line-height: 1;
+  display: inline-block;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .section-shuffle-title.shuffle-parent {
+    font-size: clamp(1.25rem, 7vw, 1.85rem);
+    line-height: 1.55;
+  }
+}
