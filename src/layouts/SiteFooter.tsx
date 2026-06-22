@@ -21,7 +21,7 @@ export function SiteFooter() {
     <footer
       id="footer"
       aria-label="Penutup"
-      className="relative min-h-[100dvh] w-full overflow-hidden bg-[var(--color-bg)]"
+      className="snap-section relative min-h-[100dvh] w-full overflow-hidden bg-[var(--color-bg)]"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >

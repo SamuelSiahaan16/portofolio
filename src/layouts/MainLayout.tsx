@@ -8,6 +8,7 @@ import { useFooterInView } from "@/hooks/useFooterInView";
 import { zIndex } from "@/config/z-index";
 import { SiteDockNav } from "./SiteDockNav";
 import { SiteFooter } from "./SiteFooter";
+import { SectionPager } from "@/components/ui/section-pager";
 
 function MainLayoutContent() {
   const placement = useDockPlacement();
@@ -31,6 +32,7 @@ function MainLayoutContent() {
           </motion.div>
         ) : null}
       </AnimatePresence>
+      <SectionPager />
       <main className="flex-1 pt-28">
         <Outlet />
       </main>

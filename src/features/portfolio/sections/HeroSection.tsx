@@ -8,7 +8,7 @@ export function HeroSection() {
     <section
       id="hero"
       aria-label={SECTION_COPY.hero.label}
-      className="relative -mt-28 scroll-mt-28 min-h-[100dvh] w-full overflow-hidden"
+      className="snap-section relative -mt-28 min-h-[100dvh] w-full overflow-hidden"
     >
       <DottedSurface className="min-h-[100dvh] w-full" />
       <div

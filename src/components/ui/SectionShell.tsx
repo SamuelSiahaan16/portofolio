@@ -24,7 +24,10 @@ export function SectionShell({
     <section
       id={id}
       aria-labelledby={`${id}-heading`}
-      className={cn("scroll-mt-28 py-[var(--spacing-section)]", className)}
+      className={cn(
+        "snap-section scroll-mt-28 min-h-[100dvh] py-[var(--spacing-section)]",
+        className,
+      )}
     >
       <div className="mb-8 max-w-2xl">
         <h2

@@ -27,6 +27,8 @@ Portfolio pribadi single-page dengan nuansa macOS — hero interaktif, dock navi
 | **Dock Nav** | Navbar gaya macOS dock — ikon dari [theSVG](https://thesvg.org), magnification on hover, tooltip label |
 | **Smart placement** | Dock di tengah saat di hero, naik ke atas saat scroll ke section lain |
 | **Active section** | `IntersectionObserver` menyorot section aktif; tombol dock ke section aktif disembunyikan |
+| **Section Pager** | Panah atas/bawah kanan bawah — navigasi presentasi antar section + footer; auto-hide saat mouse idle |
+| **Scroll snap hybrid** | `scroll-snap` proximity untuk scroll bebas di section panjang; panah/dock lompat ketat per section |
 | **Footer** | Full viewport (`100dvh`) — latar `FallingPattern` bintik hijau, teks **THANK YOU** + copyright, layer `InkReveal` (coret untuk membuka teks) |
 | **Dock hide di footer** | Saat footer terlihat ≥35%, dock disembunyikan lewat `useFooterInView` |
 | **Single-page scroll** | Satu route `/`, navigasi smooth scroll tanpa hash URL |
@@ -65,6 +67,7 @@ flowchart TB
     MainLayout["MainLayout"]
     DockCtx["DockPlacementContext"]
     SiteDock["SiteDockNav → DockTabs"]
+    SectionPager["SectionPager"]
     Footer["SiteFooter"]
   end
 
@@ -78,12 +81,14 @@ flowchart TB
     copy["copy.ts"]
     site["site.ts"]
     dockNav["dock-nav.ts"]
+    scrollTargets["scroll-targets.ts"]
   end
 
   main --> App --> router
   router --> MainLayout
   MainLayout --> DockCtx
   MainLayout --> SiteDock
+  MainLayout --> SectionPager
   MainLayout --> HomePage
   MainLayout --> Footer
   HomePage --> Hero
@@ -93,6 +98,7 @@ flowchart TB
   copy --> dockNav
   copy --> Sections
   dockNav --> SiteDock
+  scrollTargets --> SectionPager
 ```
 
 **Alur singkat**
@@ -101,8 +107,10 @@ flowchart TB
 2. `HomePage` merender section via `renderSection()` — hero full-width, sisanya di dalam `Container`.
 3. `DockPlacementContext` memantau posisi hero dan mengatur dock `center` ↔ `top`.
 4. `useActiveSection` mendeteksi section yang terlihat; `dock-tabs` menyembunyikan item aktif.
-5. `SiteFooter` menumpuk tiga layer: `FallingPattern` (latar animasi) → teks penutup → `InkReveal` (canvas scratch di atas).
-6. `useFooterInView` memantau `#footer`; saat masuk viewport, dock di-`AnimatePresence` keluar.
+5. **Dua navigasi scroll** — dock (lompat langsung) + `SectionPager` (prev/next berurutan). Keduanya memakai `scroll-to-section.ts`.
+6. Urutan pager: hero → about → … → contact → **footer** (`scroll-targets.ts`).
+7. `SiteFooter` menumpuk tiga layer: `FallingPattern` (latar animasi) → teks penutup → `InkReveal` (canvas scratch di atas).
+8. `useFooterInView` memantau `#footer`; saat masuk viewport, dock di-`AnimatePresence` keluar.
 
 ---
 
@@ -157,7 +165,8 @@ my-portofolio/
     │   ├── copy.ts          # ★ Semua teks tetap (brand, section, meta SEO)
     │   ├── site.ts          # Urutan section, navigation, meta
     │   ├── dock-nav.ts      # Mapping icon dock per section
-    │   └── z-index.ts       # Layering (dock, hero brand, dll.)
+    │   ├── scroll-targets.ts # Urutan scroll pager (section + footer)
+    │   └── z-index.ts       # Layering (dock, pager, hero brand, dll.)
     │
     ├── contexts/
     │   └── DockPlacementContext.tsx   # State center/top dock + hysteresis scroll
@@ -165,6 +174,7 @@ my-portofolio/
     ├── hooks/
     │   ├── useActiveSection.ts        # IntersectionObserver section aktif
     │   ├── useFooterInView.ts         # Sembunyikan dock saat footer terlihat
+    │   ├── usePointerActivity.ts      # Deteksi gerakan mouse untuk show/hide pager
     │   └── useColorScheme.ts          # prefers-color-scheme untuk Three.js
     │
     ├── layouts/
@@ -193,6 +203,7 @@ my-portofolio/
     │   │   └── index.ts
     │   └── ui/
     │       ├── dock-tabs.tsx          # Dock macOS + AnimatePresence
+    │       ├── section-pager.tsx      # Panah prev/next kanan bawah
     │       ├── reveal-text.tsx        # Animasi huruf per karakter
     │       ├── falling-pattern.tsx    # Partikel jatuh — `streaks` (hero) / `dots` (footer)
     │       ├── ink-reveal.tsx         # Canvas scratch-to-reveal di footer
@@ -204,7 +215,7 @@ my-portofolio/
     │   └── index.css                  # Tailwind v4, CSS tokens, dark mode
     │
     └── utils/
-        ├── scroll-to-section.ts       # Smooth scroll ke #id
+        ├── scroll-to-section.ts       # Scroll programmatic + scroll lock (anti snap glitch)
         └── cn.ts                      # className helper
 ```
 
@@ -215,6 +226,10 @@ my-portofolio/
 | File | Peran |
 |------|-------|
 | `src/config/copy.ts` | **Satu sumber teks** — `BRAND`, `SECTION_COPY`, `SITE_META`, `FOOTER` |
+| `src/config/scroll-targets.ts` | Urutan target scroll pager (`sections` + `footer`) |
+| `src/utils/scroll-to-section.ts` | `scrollToSection`, `scrollToAdjacent` — lock snap saat navigasi |
+| `src/components/ui/section-pager.tsx` | Panah atas/bawah, idle hide, `inert` saat tersembunyi |
+| `src/hooks/usePointerActivity.ts` | Show pager saat mouse/keyboard aktif (~2.2s idle) |
 | `src/layouts/SiteFooter.tsx` | Komposisi footer: pattern, teks hover, ink layer |
 | `src/components/ui/falling-pattern.tsx` | Animasi partikel CSS (`variant: "dots"` \| `"streaks"`) |
 | `src/components/ui/ink-reveal.tsx` | Efek coret tinta di atas footer |
@@ -282,6 +297,35 @@ export const FOOTER = {
 - **Dock** — otomatis hilang saat footer cukup terlihat di viewport.
 
 Hero hover brand tetap memakai `FallingPattern` mode **`streaks`** lewat `RevealText` (`background-clip: text`).
+
+### Navigasi scroll — dock & section pager
+
+Portfolio punya **dua cara navigasi** yang saling melengkapi:
+
+| Navigasi | Lokasi | Perilaku |
+|----------|--------|----------|
+| **Dock** | Atas (tengah/atas saat scroll) | Lompat langsung ke section mana pun |
+| **Section Pager** | Kanan bawah | Naik/turun satu section berurutan |
+
+**Urutan pager** mengikuti `scrollTargets` di `src/config/scroll-targets.ts`:
+
+```
+hero → about → projects → skills → experience → contact → footer
+```
+
+**Scroll snap hybrid**
+
+- **Mouse/trackpad** — scroll bebas; section panjang bisa di-scroll di dalamnya. Saat berhenti, `scroll-snap-type: y proximity` mengunci dekat awal section.
+- **Panah / dock** — lompat ketat ke awal section berikutnya. Snap sementara dimatikan (`is-scroll-navigating`) supaya tidak “balik” ke posisi tengah.
+- **Hero** — navigasi programmatic selalu ke `top: 0` (full layar).
+
+**Section Pager — visibilitas**
+
+- Muncul saat mouse bergerak atau keyboard ditekan.
+- Hilang otomatis setelah ~2.2 detik tanpa aktivitas (`usePointerActivity`).
+- Saat tersembunyi: `opacity: 0`, `inert`, `tabIndex={-1}` (tanpa error a11y).
+
+**Kustomisasi idle pager** — ubah timeout di `usePointerActivity(idleMs)` dari `section-pager.tsx`.
 
 ### Ganti icon dock
 
