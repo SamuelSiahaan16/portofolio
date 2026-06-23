@@ -1,10 +1,27 @@
 import type { ComponentType, SVGProps } from "react";
+import Css from "@thesvg/react/css";
+import Docker from "@thesvg/react/docker";
 import Educative from "@thesvg/react/educative";
 import Exercism from "@thesvg/react/exercism";
 import GcpHome from "@thesvg/react/gcp-home";
+import Git from "@thesvg/react/git";
 import Gravatar from "@thesvg/react/gravatar";
+import Html5 from "@thesvg/react/html5";
+import JavaScript from "@thesvg/react/javascript";
+import Laravel from "@thesvg/react/laravel";
 import Livechat from "@thesvg/react/livechat";
-import { GcpStackdriverIcon } from "@/components/icons/fixed-icons";
+import Php from "@thesvg/react/php";
+import Python from "@thesvg/react/python";
+import ReactIcon from "@thesvg/react/react";
+import Supabase from "@thesvg/react/supabase";
+import TailwindCss from "@thesvg/react/tailwind-css";
+import TypeScript from "@thesvg/react/typescript";
+import {
+  CursorIcon,
+  DjangoIcon,
+  GcpStackdriverIcon,
+  PostgreSqlIcon,
+} from "@/components/icons/fixed-icons";
 
 /**
  * Satu-satunya sumber icon di project ini: https://thesvg.org/
@@ -19,6 +36,21 @@ export const theSvgIcons = {
   "gcp-stackdriver": GcpStackdriverIcon,
   exercism: Exercism,
   livechat: Livechat,
+  cursor: CursorIcon,
+  html5: Html5,
+  javascript: JavaScript,
+  css: Css,
+  python: Python,
+  django: DjangoIcon,
+  laravel: Laravel,
+  php: Php,
+  git: Git,
+  react: ReactIcon,
+  docker: Docker,
+  supabase: Supabase,
+  postgresql: PostgreSqlIcon,
+  typescript: TypeScript,
+  "tailwind-css": TailwindCss,
 } as const;
 
 export type TheSvgIconName = keyof typeof theSvgIcons;

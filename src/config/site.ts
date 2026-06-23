@@ -37,7 +37,7 @@ const sections: SectionId[] = [
 ];
 
 /** Section yang mengatur layout sendiri (full bleed, tanpa wrapper Container). */
-export const fullWidthSectionIds: SectionId[] = ["hero", "about"];
+export const fullWidthSectionIds: SectionId[] = ["hero", "about", "skills"];
 
 /**
  * Edit urutan section di sini; label & deskripsi di `config/copy.ts`.

@@ -23,7 +23,7 @@ export const SECTION_COPY: Record<SectionId, SectionCopy> = {
   },
   skills: {
     label: "Skills",
-    description: "Stack, tools, dan area kekuatan yang relevan untuk role target.",
+    description: "",
   },
   experience: {
     label: "Experience",
@@ -135,5 +135,60 @@ export const ABOUT = {
     { end: 10, suffix: "+", label: "Projects" },
     { end: 3, suffix: "+", label: "Tahun" },
     { end: 15, suffix: "+", label: "Tech Stack" },
+  ],
+} as const;
+
+/** Section Skills — latar InteractiveGridBackground + beam diagram. */
+export const SKILLS = {
+  overlayOpacity: 0.28,
+  grid: {
+    gridSize: 50,
+    gridColor: "#cbcbcb",
+    darkGridColor: "#303030",
+    effectColor: "rgba(0, 0, 0, 0.6)",
+    darkEffectColor: "rgba(255, 255, 255, 0.6)",
+    trailLength: 3,
+    idleSpeed: 0.2,
+    glow: true,
+    glowRadius: 20,
+    showFade: true,
+    fadeIntensity: 20,
+    idleRandomCount: 5,
+  },
+  beam: {
+    gradientStartColor: "#78c8ff",
+    gradientStopColor: "#6366f1",
+    pathColor: "var(--color-border)",
+    pathWidth: 2,
+    pathOpacity: 0.55,
+    duration: 5,
+  },
+  orbit: {
+    minRadius: 34,
+    maxRadius: 47,
+    floatAmplitude: 2.8,
+    nodeCollisionRadius: 6.8,
+    centerCollisionRadius: 9.5,
+  },
+  center: {
+    icon: "gcp-stackdriver" as const,
+    label: "",
+  },
+  items: [
+    { icon: "cursor" as const, label: "Cursor" },
+    { icon: "html5" as const, label: "HTML5" },
+    { icon: "javascript" as const, label: "JavaScript" },
+    { icon: "css" as const, label: "CSS" },
+    { icon: "python" as const, label: "Python" },
+    { icon: "django" as const, label: "Django" },
+    { icon: "laravel" as const, label: "Laravel" },
+    { icon: "php" as const, label: "PHP" },
+    { icon: "git" as const, label: "Git" },
+    { icon: "react" as const, label: "React" },
+    { icon: "docker" as const, label: "Docker" },
+    { icon: "supabase" as const, label: "Supabase" },
+    { icon: "postgresql" as const, label: "PostgreSQL" },
+    { icon: "typescript" as const, label: "TypeScript" },
+    { icon: "tailwind-css" as const, label: "Tailwind" },
   ],
 } as const;

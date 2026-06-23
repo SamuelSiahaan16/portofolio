@@ -14,6 +14,7 @@ Portfolio pribadi single-page dengan nuansa macOS — hero interaktif, dock navi
 - [File Penting](#file-penting)
 - [Kustomisasi Konten](#kustomisasi-konten)
 - [Section About](#section-about)
+- [Section Skills](#section-skills)
 - [Workflow Development](#workflow-development)
 - [Standar Kode](#standar-kode)
 - [Scripts](#scripts)
@@ -26,6 +27,7 @@ Portfolio pribadi single-page dengan nuansa macOS — hero interaktif, dock navi
 |------|-----------|
 | **Hero** | Background `DottedSurface` (Three.js), brand `JEFF.DEV` dengan animasi `RevealText` + hover pattern |
 | **About** | Full-bleed section — latar `FaultyTerminal` (WebGL/ogl), `ProfileCard` tilt, stat counter, CTA 3D, kartu pendidikan, animasi enter/exit per blok |
+| **Skills** | Full-bleed — latar `InteractiveGridBackground` (grid interaktif), diagram skill `SkillsBeam` + `AnimatedBeam`, ikon [theSVG](https://thesvg.org), drag + collision physics, animasi enter/exit |
 | **Section titles** | Judul section (About, Projects, …) memakai `Shuffle` (GSAP) — font pixel **Press Start 2P**, replay on hover |
 | **Dock Nav** | Navbar gaya macOS dock — ikon dari [theSVG](https://thesvg.org), magnification on hover, tooltip label |
 | **Smart placement** | Dock di tengah saat di hero, naik ke atas saat scroll ke section lain |
@@ -35,8 +37,8 @@ Portfolio pribadi single-page dengan nuansa macOS — hero interaktif, dock navi
 | **Footer** | Full viewport (`100dvh`) — latar `FallingPattern` bintik hijau, teks **THANK YOU** + copyright, layer `InkReveal` (coret untuk membuka teks) |
 | **Dock hide di footer** | Saat footer terlihat ≥35%, dock disembunyikan lewat `useFooterInView` |
 | **Single-page scroll** | Satu route `/`, navigasi smooth scroll tanpa hash URL |
-| **Copy terpusat** | Semua label, deskripsi, meta situs, config footer, about, dan animasi judul di `src/config/copy.ts` |
-| **Section shell** | Projects / Skills / Experience / Contact — `SectionShell` placeholder, konten di-center vertikal (`100dvh`) |
+| **Copy terpusat** | Semua label, deskripsi, meta situs, config footer, about, skills, dan animasi judul di `src/config/copy.ts` |
+| **Section shell** | Projects / Experience / Contact — `SectionShell` placeholder, konten di-center vertikal (`100dvh`) |
 | **A11y & motion** | `prefers-reduced-motion`, `aria-label`, scrollbar native disembunyikan |
 
 ---
@@ -108,7 +110,7 @@ flowchart TB
 **Alur singkat**
 
 1. `siteConfig.sections` menentukan urutan section di halaman.
-2. `HomePage` merender section via `renderSection()` — hero full-width, sisanya di dalam `Container`.
+2. `HomePage` merender section via `renderSection()` — hero, about, dan skills full-width (`fullWidthSectionIds`); sisanya di dalam `Container`.
 3. `DockPlacementContext` memantau posisi hero dan mengatur dock `center` ↔ `top`.
 4. `useActiveSection` mendeteksi section yang terlihat; `dock-tabs` menyembunyikan item aktif.
 5. **Dua navigasi scroll** — dock (lompat langsung) + `SectionPager` (prev/next berurutan). Keduanya memakai `scroll-to-section.ts`.
@@ -196,14 +198,14 @@ my-portofolio/
     │   ├── HeroBrand.tsx              # RevealText brand
     │   ├── AboutSection.tsx           # FaultyTerminal + ProfileCard + CTA + stats + education
     │   ├── ProjectsSection.tsx
-    │   ├── SkillsSection.tsx
+    │   ├── SkillsSection.tsx          # InteractiveGridBackground + SkillsBeam diagram
     │   ├── ExperienceSection.tsx
     │   └── ContactSection.tsx
     │
     ├── components/
     │   ├── icons/
     │   │   ├── registry.ts            # Daftar icon theSVG yang dipakai
-    │   │   ├── fixed-icons.tsx        # Patch SVG tanpa fill (Stackdriver)
+    │   │   ├── fixed-icons.tsx        # Patch SVG tanpa fill (Stackdriver, Cursor, Django, PostgreSQL)
     │   │   ├── TheSvgIcon.tsx         # Renderer icon
     │   │   └── index.ts
     │   └── ui/
@@ -222,6 +224,9 @@ my-portofolio/
     │       ├── falling-pattern.tsx    # Partikel jatuh — `streaks` (hero) / `dots` (footer)
     │       ├── ink-reveal.tsx         # Canvas scratch-to-reveal di footer
     │       ├── dotted-surface.tsx     # Hero Three.js
+    │       ├── interactive-grid-background.tsx  # Grid interaktif + trail (Skills)
+    │       ├── animated-beam.tsx      # Beam animasi Magic UI (Skills)
+    │       ├── skills-beam.tsx        # Diagram orbit skill + drag + collision
     │       ├── SectionShell.tsx       # Wrapper section placeholder
     │       └── Container.tsx
     │
@@ -248,13 +253,17 @@ my-portofolio/
 
 | File | Peran |
 |------|-------|
-| `src/config/copy.ts` | **Satu sumber teks** — `BRAND`, `SECTION_COPY`, `SITE_META`, `FOOTER`, `ABOUT`, `SECTION_TITLE` |
+| `src/config/copy.ts` | **Satu sumber teks** — `BRAND`, `SECTION_COPY`, `SITE_META`, `FOOTER`, `ABOUT`, `SKILLS`, `SECTION_TITLE` |
 | `src/config/scroll-targets.ts` | Urutan target scroll pager (`sections` + `footer`) |
 | `src/utils/scroll-to-section.ts` | `scrollToSection`, `scrollToAdjacent`, `getScrollTargetFromPosition` — lock snap + `scrollIntoView` |
 | `src/components/ui/section-pager.tsx` | Panah atas/bawah, idle hide, `canGoUp` dari `scrollY`, `inert` saat tersembunyi |
 | `src/hooks/useScrollY.ts` | Track posisi scroll untuk pager |
 | `src/hooks/usePointerActivity.ts` | Show pager saat mouse/keyboard aktif (~2.2s idle) |
 | `src/features/portfolio/sections/AboutSection.tsx` | Layout About — grid 2 kolom, animasi per blok |
+| `src/features/portfolio/sections/SkillsSection.tsx` | Layout Skills — judul center + diagram beam orbit |
+| `src/components/ui/interactive-grid-background.tsx` | Background grid interaktif (mouse trail + idle drift) |
+| `src/components/ui/skills-beam.tsx` | Node skill orbit, drag, collision physics, label di bawah ikon |
+| `src/components/ui/animated-beam.tsx` | Garis beam animasi antar node → center |
 | `src/components/ui/faulty-terminal.tsx` | Background WebGL merah glitch (ogl) |
 | `src/components/ui/profile-card.tsx` | Kartu profil interaktif + tilt + fallback avatar |
 | `src/components/ui/section-reveal.tsx` | Animasi fade/slide/blur enter & exit (Motion) |
@@ -376,12 +385,13 @@ Edit mapping di **`src/config/dock-nav.ts`**, lalu daftarkan import di **`src/co
 3. Buat komponen section di `features/portfolio/sections/`
 4. Daftarkan di `sectionMap` (`sections/index.tsx`)
 5. Tambah icon di `dock-nav.ts` + `registry.ts`
+6. Untuk section full-bleed, tambahkan id ke `fullWidthSectionIds` di `site.ts` (saat ini: `hero`, `about`, `skills`)
 
 ---
 
 ## Section About
 
-Section **About** adalah implementasi penuh pertama (bukan placeholder `SectionShell`). Section lain (Projects, Skills, …) masih memakai `SectionShell` dengan konten placeholder.
+Section **About** dan **Skills** adalah implementasi penuh (bukan placeholder `SectionShell`). Section lain (Projects, Experience, Contact) masih memakai `SectionShell`.
 
 ### Ringkasan perubahan About
 
@@ -502,6 +512,130 @@ Font pixel: **Press Start 2P** (Google Fonts di `index.html`, token `--font-pixe
 2. Taruh CV di `public/cv/cv.pdf`
 3. Isi `profile.name` & `profile.title` di `ABOUT.profile`
 4. Sesuaikan angka `stats`, `education`, dan `SECTION_COPY.about.description`
+
+---
+
+## Section Skills
+
+Section **Skills** full-bleed (`fullWidthSectionIds`) dengan background grid interaktif dan diagram skill orbit yang terhubung ke node tengah lewat animated beam. Semua config di `SKILLS` (`copy.ts`); label & deskripsi di `SECTION_COPY.skills`.
+
+### Ringkasan fitur Skills
+
+| Area | Yang ditambahkan / diubah |
+|------|---------------------------|
+| **Layout** | Full-bleed, judul + deskripsi center, diagram orbit lebar (`max-w-7xl`) |
+| **Background** | `InteractiveGridBackground` — grid + trail mouse, idle drift, fade radial |
+| **Diagram** | `SkillsBeam` — node skill mengorbit node tengah, label di bawah ikon |
+| **Beam** | `AnimatedBeam` (Magic UI) — garis gradient animasi node → center |
+| **Ikon** | `@thesvg/react` via `TheSvgIcon`; patch di `fixed-icons.tsx` jika path tanpa `fill` |
+| **Interaksi** | Drag node (mouse/touch), collision push halus, float physics + damping |
+| **Judul** | `SectionHeading` center → `Shuffle` GSAP |
+| **Animasi** | `SectionReveal` judul + diagram; `SectionBackdropReveal` background; pause simulasi saat out of view |
+
+### Layout Skills (desktop)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  [InteractiveGridBackground — full bleed]               │
+│              SKILLS (Shuffle, center)                   │
+│              Deskripsi singkat                          │
+│                                                         │
+│     [TS]    [HTML5]              [Docker]    [Git]      │
+│        \      |    \    [CENTER]    /      /            │
+│         [CSS] ··· [React/Jeff.dev] ··· [Python]         │
+│              (node orbit — draggable)                   │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Config Skills — `SKILLS` di `copy.ts`
+
+```ts
+export const SKILLS = {
+  overlayOpacity: 0.28,
+  grid: {
+    gridSize: 50,
+    gridColor: "#cbcbcb",
+    darkGridColor: "#303030",
+    effectColor: "rgba(0, 0, 0, 0.6)",
+    darkEffectColor: "rgba(255, 255, 255, 0.6)",
+    trailLength: 3,
+    idleSpeed: 0.2,
+    glow: true,
+    glowRadius: 20,
+    showFade: true,
+    fadeIntensity: 20,
+    idleRandomCount: 5,
+  },
+  beam: {
+    gradientStartColor: "#78c8ff",
+    gradientStopColor: "#6366f1",
+    pathColor: "var(--color-border)",
+    pathWidth: 2,
+    pathOpacity: 0.35,
+    duration: 4,
+  },
+  orbit: {
+    minRadius: 34,           // jarak min node dari tengah (%)
+    maxRadius: 47,             // jarak max
+    floatAmplitude: 2.8,     // intensitas ngambang
+    nodeCollisionRadius: 6.8,  // radius tabrakan antar skill
+    centerCollisionRadius: 9.5,
+  },
+  center: {
+    icon: "gcp-stackdriver", // slug theSVG — node tengah
+    label: "Jeff.dev",
+  },
+  items: [
+    { icon: "cursor", label: "Cursor" },
+    { icon: "html5", label: "HTML5" },
+    { icon: "javascript", label: "JavaScript" },
+    { icon: "css", label: "CSS" },
+    { icon: "python", label: "Python" },
+    { icon: "django", label: "Django" },
+    { icon: "laravel", label: "Laravel" },
+    { icon: "php", label: "PHP" },
+    { icon: "git", label: "Git" },
+    { icon: "react", label: "React" },
+    { icon: "docker", label: "Docker" },
+    { icon: "supabase", label: "Supabase" },
+    { icon: "postgresql", label: "PostgreSQL" },
+    { icon: "typescript", label: "TypeScript" },
+    { icon: "tailwind-css", label: "Tailwind" },
+  ],
+};
+```
+
+**Label & deskripsi** section Skills tetap di `SECTION_COPY.skills`.
+
+### Tambah / ganti skill
+
+1. Cari slug di [thesvg.org](https://thesvg.org) (mis. `icon/react` → slug `react`)
+2. Import di `src/components/icons/registry.ts`: `import ReactIcon from "@thesvg/react/react"`
+3. Daftarkan di `theSvgIcons`: `react: ReactIcon`
+4. Tambah entry di `SKILLS.items` di `copy.ts`
+5. Jika ikon tidak muncul (path tanpa `fill`), tambah patch di `fixed-icons.tsx` — lihat `CursorIcon`, `DjangoIcon`, `PostgreSqlIcon`
+
+`TheSvgIcon` punya fallback `[&_path:not([fill])]:fill-current` untuk ikon tanpa warna di background gelap.
+
+### Komponen Skills — file terkait
+
+| Komponen | File |
+|----------|------|
+| Section utama | `SkillsSection.tsx` |
+| Background grid | `interactive-grid-background.tsx` |
+| Diagram orbit + physics | `skills-beam.tsx` |
+| Garis beam animasi | `animated-beam.tsx` |
+| Animasi blok & backdrop | `section-reveal.tsx` (`SectionReveal`, `SectionBackdropReveal`) |
+| Judul | `section-heading.tsx` → `shuffle.tsx` |
+| Renderer ikon | `TheSvgIcon.tsx` + `registry.ts` + `fixed-icons.tsx` |
+
+### Perilaku interaksi & animasi Skills
+
+- **Float** — node mengambang perlahan; velocity + damping (bukan teleport)
+- **Drag** — geser node dengan kursor; node lain terdorong (collision)
+- **Beam** — mengikuti posisi node real-time (`requestAnimationFrame`)
+- **Enter/exit** — `sectionInView` sinkron; background grid + simulasi pause saat section keluar viewport
+- **Reduced motion** — float dimatikan; drag & beam tetap berfungsi
 
 ---
 
