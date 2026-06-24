@@ -3,9 +3,9 @@ import { SECTION_COPY, SITE_META } from "@/config/copy";
 export type SectionId =
   | "hero"
   | "about"
-  | "projects"
-  | "skills"
   | "experience"
+  | "skills"
+  | "projects"
   | "contact";
 
 export type NavItem = {
@@ -30,14 +30,19 @@ export type SiteConfig = {
 const sections: SectionId[] = [
   "hero",
   "about",
-  "projects",
   "skills",
   "experience",
+  "projects",
   "contact",
 ];
 
 /** Section yang mengatur layout sendiri (full bleed, tanpa wrapper Container). */
-export const fullWidthSectionIds: SectionId[] = ["hero", "about", "skills"];
+export const fullWidthSectionIds: SectionId[] = [
+  "hero",
+  "about",
+  "skills",
+  "contact",
+];
 
 /**
  * Edit urutan section di sini; label & deskripsi di `config/copy.ts`.

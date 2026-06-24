@@ -31,7 +31,7 @@ export const SECTION_COPY: Record<SectionId, SectionCopy> = {
   },
   contact: {
     label: "Contact",
-    description: "Satu jalur jelas untuk hiring manager atau klien menghubungi kamu.",
+    description: "",
   },
 };
 
@@ -191,4 +191,64 @@ export const SKILLS = {
     { icon: "typescript" as const, label: "TypeScript" },
     { icon: "tailwind-css" as const, label: "Tailwind" },
   ],
+} as const;
+
+/** Section Contact — latar ShapeGrid (React Bits). */
+export const CONTACT = {
+  overlayOpacity: 0.42,
+  shapeGrid: {
+    speed: 0.5,
+    squareSize: 40,
+    direction: "diagonal" as const,
+    borderColor: "rgba(255, 255, 255, 0.14)",
+    hoverFillColor: "rgba(255, 255, 255, 0.1)",
+    shape: "square" as const,
+    hoverTrailAmount: 5,
+  },
+  form: {
+    nameLabel: "Nama",
+    emailLabel: "Email",
+    messageLabel: "Pesan",
+    namePlaceholder: "Nama lengkap kamu",
+    emailPlaceholder: "hello@email.com",
+    messagePlaceholder: "Ceritakan tentang proyek atau pertanyaan kamu...",
+    submitLabel: "Kirim Pesan",
+    successMessage:
+      "Terima kasih! Pesan kamu sudah tercatat. (Demo — sambungkan ke backend / Formspree nanti.)",
+    electricBorder: {
+      color: "#5a8fff",
+      speed: 0.85,
+      chaos: 0.07,
+      borderRadius: 20,
+    },
+  },
+  sidebar: {
+    title: "Let's Build Something Great",
+    paragraphs: [
+      "Selalu antusias mempelajari hal baru, membangun produk yang bermanfaat, dan bertemu orang-orang dengan ide menarik.",
+      "Jika ada sesuatu yang ingin didiskusikan, jangan ragu untuk menghubungi saya.",
+    ],
+    links: [
+      {
+        id: "email",
+        icon: "gmail",
+        ariaLabel: "Email hello@jeff.dev",
+        href: "mailto:hello@jeff.dev",
+      },
+      {
+        id: "linkedin",
+        icon: "linkedin",
+        ariaLabel: "LinkedIn",
+        href: "https://linkedin.com/in/",
+        external: true,
+      },
+      {
+        id: "instagram",
+        icon: "instagram",
+        ariaLabel: "Instagram",
+        href: "https://instagram.com/",
+        external: true,
+      },
+    ],
+  },
 } as const;

@@ -15,6 +15,7 @@ Portfolio pribadi single-page dengan nuansa macOS — hero interaktif, dock navi
 - [Kustomisasi Konten](#kustomisasi-konten)
 - [Section About](#section-about)
 - [Section Skills](#section-skills)
+- [Section Contact](#section-contact)
 - [Workflow Development](#workflow-development)
 - [Standar Kode](#standar-kode)
 - [Scripts](#scripts)
@@ -28,6 +29,7 @@ Portfolio pribadi single-page dengan nuansa macOS — hero interaktif, dock navi
 | **Hero** | Background `DottedSurface` (Three.js), brand `JEFF.DEV` dengan animasi `RevealText` + hover pattern |
 | **About** | Full-bleed section — latar `FaultyTerminal` (WebGL/ogl), `ProfileCard` tilt, stat counter, CTA 3D, kartu pendidikan, animasi enter/exit per blok |
 | **Skills** | Full-bleed — latar `InteractiveGridBackground` (grid interaktif), diagram skill `SkillsBeam` + `AnimatedBeam`, ikon [theSVG](https://thesvg.org), drag + collision physics, animasi enter/exit |
+| **Contact** | Full-bleed — latar `ShapeGrid` (grid interaktif diagonal), form `ElectricBorder` (React Bits), sidebar info + link sosial ikon SVG, layout 50/50, animasi enter/exit |
 | **Section titles** | Judul section (About, Projects, …) memakai `Shuffle` (GSAP) — font pixel **Press Start 2P**, replay on hover |
 | **Dock Nav** | Navbar gaya macOS dock — ikon dari [theSVG](https://thesvg.org), magnification on hover, tooltip label |
 | **Smart placement** | Dock di tengah saat di hero, naik ke atas saat scroll ke section lain |
@@ -37,8 +39,8 @@ Portfolio pribadi single-page dengan nuansa macOS — hero interaktif, dock navi
 | **Footer** | Full viewport (`100dvh`) — latar `FallingPattern` bintik hijau, teks **THANK YOU** + copyright, layer `InkReveal` (coret untuk membuka teks) |
 | **Dock hide di footer** | Saat footer terlihat ≥35%, dock disembunyikan lewat `useFooterInView` |
 | **Single-page scroll** | Satu route `/`, navigasi smooth scroll tanpa hash URL |
-| **Copy terpusat** | Semua label, deskripsi, meta situs, config footer, about, skills, dan animasi judul di `src/config/copy.ts` |
-| **Section shell** | Projects / Experience / Contact — `SectionShell` placeholder, konten di-center vertikal (`100dvh`) |
+| **Copy terpusat** | Semua label, deskripsi, meta situs, config footer, about, skills, contact, dan animasi judul di `src/config/copy.ts` |
+| **Section shell** | Projects / Experience — `SectionShell` placeholder, konten di-center vertikal (`100dvh`) |
 | **A11y & motion** | `prefers-reduced-motion`, `aria-label`, scrollbar native disembunyikan |
 
 ---
@@ -110,7 +112,7 @@ flowchart TB
 **Alur singkat**
 
 1. `siteConfig.sections` menentukan urutan section di halaman.
-2. `HomePage` merender section via `renderSection()` — hero, about, dan skills full-width (`fullWidthSectionIds`); sisanya di dalam `Container`.
+2. `HomePage` merender section via `renderSection()` — hero, about, skills, dan contact full-width (`fullWidthSectionIds`); sisanya di dalam `Container`.
 3. `DockPlacementContext` memantau posisi hero dan mengatur dock `center` ↔ `top`.
 4. `useActiveSection` mendeteksi section yang terlihat; `dock-tabs` menyembunyikan item aktif.
 5. **Dua navigasi scroll** — dock (lompat langsung) + `SectionPager` (prev/next berurutan). Keduanya memakai `scroll-to-section.ts`.
@@ -200,11 +202,11 @@ my-portofolio/
     │   ├── ProjectsSection.tsx
     │   ├── SkillsSection.tsx          # InteractiveGridBackground + SkillsBeam diagram
     │   ├── ExperienceSection.tsx
-    │   └── ContactSection.tsx
+    │   └── ContactSection.tsx         # ShapeGrid + ContactForm + ContactSidebar
     │
     ├── components/
     │   ├── icons/
-    │   │   ├── registry.ts            # Daftar icon theSVG yang dipakai
+    │   │   ├── registry.ts            # Daftar icon theSVG (skill, dock, sosial contact)
     │   │   ├── fixed-icons.tsx        # Patch SVG tanpa fill (Stackdriver, Cursor, Django, PostgreSQL)
     │   │   ├── TheSvgIcon.tsx         # Renderer icon
     │   │   └── index.ts
@@ -227,6 +229,12 @@ my-portofolio/
     │       ├── interactive-grid-background.tsx  # Grid interaktif + trail (Skills)
     │       ├── animated-beam.tsx      # Beam animasi Magic UI (Skills)
     │       ├── skills-beam.tsx        # Diagram orbit skill + drag + collision
+    │       ├── shape-grid.tsx         # Grid interaktif diagonal (Contact)
+    │       ├── shape-grid.css
+    │       ├── contact-form.tsx       # Form kontak + ElectricBorder wrapper
+    │       ├── contact-sidebar.tsx    # Info panel + link sosial (ikon SVG)
+    │       ├── electric-border.tsx    # Border animasi canvas (React Bits)
+    │       ├── electric-border.css
     │       ├── SectionShell.tsx       # Wrapper section placeholder
     │       └── Container.tsx
     │
@@ -253,7 +261,7 @@ my-portofolio/
 
 | File | Peran |
 |------|-------|
-| `src/config/copy.ts` | **Satu sumber teks** — `BRAND`, `SECTION_COPY`, `SITE_META`, `FOOTER`, `ABOUT`, `SKILLS`, `SECTION_TITLE` |
+| `src/config/copy.ts` | **Satu sumber teks** — `BRAND`, `SECTION_COPY`, `SITE_META`, `FOOTER`, `ABOUT`, `SKILLS`, `CONTACT`, `SECTION_TITLE` |
 | `src/config/scroll-targets.ts` | Urutan target scroll pager (`sections` + `footer`) |
 | `src/utils/scroll-to-section.ts` | `scrollToSection`, `scrollToAdjacent`, `getScrollTargetFromPosition` — lock snap + `scrollIntoView` |
 | `src/components/ui/section-pager.tsx` | Panah atas/bawah, idle hide, `canGoUp` dari `scrollY`, `inert` saat tersembunyi |
@@ -261,6 +269,11 @@ my-portofolio/
 | `src/hooks/usePointerActivity.ts` | Show pager saat mouse/keyboard aktif (~2.2s idle) |
 | `src/features/portfolio/sections/AboutSection.tsx` | Layout About — grid 2 kolom, animasi per blok |
 | `src/features/portfolio/sections/SkillsSection.tsx` | Layout Skills — judul center + diagram beam orbit |
+| `src/features/portfolio/sections/ContactSection.tsx` | Layout Contact — grid 2 kolom, ShapeGrid backdrop, pointer-events hybrid |
+| `src/components/ui/shape-grid.tsx` | Background grid diagonal interaktif (hover trail) |
+| `src/components/ui/contact-form.tsx` | Form nama/email/pesan + `ElectricBorder` |
+| `src/components/ui/contact-sidebar.tsx` | Panel info + tombol ikon sosial (`TheSvgIcon`) |
+| `src/components/ui/electric-border.tsx` | Border listrik animasi canvas — pause saat out of view |
 | `src/components/ui/interactive-grid-background.tsx` | Background grid interaktif (mouse trail + idle drift) |
 | `src/components/ui/skills-beam.tsx` | Node skill orbit, drag, collision physics, label di bawah ikon |
 | `src/components/ui/animated-beam.tsx` | Garis beam animasi antar node → center |
@@ -351,7 +364,7 @@ Portfolio punya **dua cara navigasi** yang saling melengkapi:
 **Urutan pager** mengikuti `scrollTargets` di `src/config/scroll-targets.ts`:
 
 ```
-hero → about → projects → skills → experience → contact → footer
+hero → about → skills → experience → projects → contact → footer
 ```
 
 **Scroll snap hybrid**
@@ -385,13 +398,13 @@ Edit mapping di **`src/config/dock-nav.ts`**, lalu daftarkan import di **`src/co
 3. Buat komponen section di `features/portfolio/sections/`
 4. Daftarkan di `sectionMap` (`sections/index.tsx`)
 5. Tambah icon di `dock-nav.ts` + `registry.ts`
-6. Untuk section full-bleed, tambahkan id ke `fullWidthSectionIds` di `site.ts` (saat ini: `hero`, `about`, `skills`)
+6. Untuk section full-bleed, tambahkan id ke `fullWidthSectionIds` di `site.ts` (saat ini: `hero`, `about`, `skills`, `contact`)
 
 ---
 
 ## Section About
 
-Section **About** dan **Skills** adalah implementasi penuh (bukan placeholder `SectionShell`). Section lain (Projects, Experience, Contact) masih memakai `SectionShell`.
+Section **About**, **Skills**, dan **Contact** adalah implementasi penuh (bukan placeholder `SectionShell`). Section lain (Projects, Experience) masih memakai `SectionShell`.
 
 ### Ringkasan perubahan About
 
@@ -571,19 +584,19 @@ export const SKILLS = {
     gradientStopColor: "#6366f1",
     pathColor: "var(--color-border)",
     pathWidth: 2,
-    pathOpacity: 0.35,
-    duration: 4,
+    pathOpacity: 0.55,
+    duration: 5,
   },
   orbit: {
-    minRadius: 34,           // jarak min node dari tengah (%)
-    maxRadius: 47,             // jarak max
-    floatAmplitude: 2.8,     // intensitas ngambang
-    nodeCollisionRadius: 6.8,  // radius tabrakan antar skill
+    minRadius: 34,
+    maxRadius: 47,
+    floatAmplitude: 2.8,
+    nodeCollisionRadius: 6.8,
     centerCollisionRadius: 9.5,
   },
   center: {
-    icon: "gcp-stackdriver", // slug theSVG — node tengah
-    label: "Jeff.dev",
+    icon: "gcp-stackdriver",
+    label: "",                 // kosong = tanpa label di bawah node tengah
   },
   items: [
     { icon: "cursor", label: "Cursor" },
@@ -636,6 +649,148 @@ export const SKILLS = {
 - **Beam** — mengikuti posisi node real-time (`requestAnimationFrame`)
 - **Enter/exit** — `sectionInView` sinkron; background grid + simulasi pause saat section keluar viewport
 - **Reduced motion** — float dimatikan; drag & beam tetap berfungsi
+
+---
+
+## Section Contact
+
+Section **Contact** full-bleed (`fullWidthSectionIds`) dengan background grid interaktif, form ber-border animasi, dan panel info dengan link sosial berupa ikon SVG. Semua config di `CONTACT` (`copy.ts`); label & deskripsi di `SECTION_COPY.contact`.
+
+### Ringkasan fitur Contact
+
+| Area | Yang ditambahkan / diubah |
+|------|---------------------------|
+| **Layout** | Full-bleed, judul kiri + deskripsi, grid 2 kolom 50/50 (form \| sidebar) |
+| **Background** | `ShapeGrid` — grid diagonal + hover trail, overlay gelap |
+| **Form** | `ContactForm` — nama & email sejajar, textarea pesan, tombol `Btn3DButton` |
+| **Border** | `ElectricBorder` (React Bits) — border listrik canvas, warna/chaos di config |
+| **Sidebar** | Judul + paragraf info, link sosial **ikon saja** (`gmail`, `linkedin`, `instagram`) |
+| **Judul** | `SectionHeading` kiri → `Shuffle` GSAP |
+| **Animasi** | `SectionReveal` per blok; `SectionBackdropReveal` background; pause grid & border saat out of view |
+| **Pointer events** | Backdrop `pointer-events-none`; canvas ShapeGrid `auto`; konten form/sidebar `auto` |
+
+### Layout Contact (desktop)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  [ShapeGrid background — full bleed, hover trail]       │
+│  CONTACT (Shuffle, kiri)                                │
+│  Deskripsi singkat                                      │
+│  ┌─────────────────────────┬───────────────────────────┐│
+│  │ [ElectricBorder]        │  Mari berkolaborasi         ││
+│  │  Nama    │  Email       │  Paragraf info...          ││
+│  │  Pesan (textarea)       │  [📧] [in] [ig]  (ikon SVG) ││
+│  │           [Kirim Pesan] │                            ││
+│  └─────────────────────────┴───────────────────────────┘│
+└─────────────────────────────────────────────────────────┘
+```
+
+### Config Contact — `CONTACT` di `copy.ts`
+
+```ts
+export const CONTACT = {
+  overlayOpacity: 0.42,
+  shapeGrid: {
+    speed: 0.5,
+    squareSize: 40,
+    direction: "diagonal",
+    borderColor: "rgba(255, 255, 255, 0.14)",
+    hoverFillColor: "rgba(255, 255, 255, 0.1)",
+    shape: "square",
+    hoverTrailAmount: 5,
+  },
+  form: {
+    nameLabel: "Nama",
+    emailLabel: "Email",
+    messageLabel: "Pesan",
+    namePlaceholder: "Nama lengkap kamu",
+    emailPlaceholder: "hello@email.com",
+    messagePlaceholder: "Ceritakan tentang proyek atau pertanyaan kamu...",
+    submitLabel: "Kirim Pesan",
+    successMessage: "Terima kasih! ... (Demo — sambungkan ke Formspree nanti.)",
+    electricBorder: {
+      color: "#5a8fff",
+      speed: 0.85,
+      chaos: 0.07,
+      borderRadius: 20,
+    },
+  },
+  sidebar: {
+    title: "Let's Build Something Great",
+    paragraphs: [
+      "Selalu antusias mempelajari hal baru...",
+      "Jika ada sesuatu yang ingin didiskusikan...",
+    ],
+    links: [
+      {
+        id: "email",
+        icon: "gmail",
+        ariaLabel: "Email hello@jeff.dev",
+        href: "mailto:hello@jeff.dev",
+      },
+      {
+        id: "linkedin",
+        icon: "linkedin",
+        ariaLabel: "LinkedIn",
+        href: "https://linkedin.com/in/",
+        external: true,
+      },
+      {
+        id: "instagram",
+        icon: "instagram",
+        ariaLabel: "Instagram",
+        href: "https://instagram.com/",
+        external: true,
+      },
+    ],
+  },
+};
+```
+
+**Label & deskripsi** section Contact tetap di `SECTION_COPY.contact`.
+
+### Tambah / ganti link sosial
+
+1. Cari slug ikon di [thesvg.org](https://thesvg.org) — tersedia `gmail`, `linkedin`, `instagram`, `tiktok`, dll.
+2. Import & daftarkan di `src/components/icons/registry.ts`
+3. Tambah entry di `CONTACT.sidebar.links` dengan `icon`, `ariaLabel`, `href`, dan `external: true` jika perlu tab baru
+4. Tipe ikon contact dibatasi di `contact-sidebar.tsx` (`ContactLinkIcon`) — tambah slug baru di union type jika perlu
+
+### Sambungkan form ke backend
+
+Saat ini submit form **demo** (state lokal + pesan sukses). Untuk production:
+
+- [Formspree](https://formspree.io) — `action` + `method` di `<form>`
+- API route sendiri — `fetch` POST di `handleSubmit` (`contact-form.tsx`)
+- Atau `mailto:` fallback (kurang ideal untuk UX)
+
+### Komponen Contact — file terkait
+
+| Komponen | File |
+|----------|------|
+| Section utama | `ContactSection.tsx` |
+| Background grid | `shape-grid.tsx` + `shape-grid.css` |
+| Form | `contact-form.tsx` |
+| Panel info & sosial | `contact-sidebar.tsx` |
+| Border animasi | `electric-border.tsx` + `electric-border.css` |
+| Tombol submit | `btn-3d.tsx` |
+| Animasi blok & backdrop | `section-reveal.tsx` |
+| Judul | `section-heading.tsx` → `shuffle.tsx` |
+| Ikon sosial | `TheSvgIcon.tsx` + `registry.ts` |
+
+### Perilaku animasi & interaksi Contact
+
+- **ShapeGrid** — hover mengisi sel + trail; pause saat section keluar viewport atau `prefers-reduced-motion`
+- **ElectricBorder** — animasi canvas `requestAnimationFrame`; pause bersamaan dengan grid
+- **Enter/exit** — `sectionInView` sinkron; form slide kiri, sidebar slide kanan
+- **A11y** — link ikon punya `aria-label` + `title`; form punya label eksplisit per field
+
+### Checklist sebelum deploy
+
+1. Ganti URL placeholder di `CONTACT.sidebar.links` (LinkedIn, Instagram, email)
+2. Isi `SECTION_COPY.contact.description` sesuai tone kamu
+3. Sambungkan form ke Formspree / API (ganti handler demo di `contact-form.tsx`)
+4. Sesuaikan `electricBorder.color` agar match accent theme jika perlu
 
 ---
 
